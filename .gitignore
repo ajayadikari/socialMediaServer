@@ -1,0 +1,119 @@
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+
+# Static / Media
+staticfiles/
+media/
+uploads/
+
+# Local dev / editor files
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Python tooling
+.coverage*
+coverage.xml
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyright/
+.pytype/
+pip-wheel-metadata/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Dependency / build artifacts
+build/
+dist/
+*.egg-info/
+*.whl
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Secrets
+*.pem
+*.key
+*.crt
+
+# Logs
+logs/
+*.pid
+
+# Node / frontend artifacts
+node_modules/
+.npm/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Cache
+.mypy_cache/
+.ruff_cache/
+.pyright/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Secrets
+*.pem
+*.key
