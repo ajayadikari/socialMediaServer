@@ -6,6 +6,7 @@ from .serializers import MessageSerializer
 from .models import MessageClass
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+from rest_framework import status
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -140,8 +141,19 @@ def get_conversation(req, id):
         user = req.user
         isGroup = req.GET.get('group', False)
         if isGroup:
-            # implementation pending
-            pass
+            try:
+                club = ClubClass.objects.get(id=id)
+                messagesQueryset = MessageClass.objects.filter(club=club)
+                messages = MessageSerializer(messagesQueryset, many=True)
+                return Response({
+                    "success": True,
+                    "messages": messages.data
+                })
+            except ClubClass.DoesNotExist:
+                return Response({
+                    "success": False, 
+                    "message": "club doesn't exists"
+                }, status.HTTP_404_NOT_FOUND)
         friend = User.objects.filter(id=id).first()
         if friend is None:
             return Response({

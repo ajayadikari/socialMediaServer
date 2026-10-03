@@ -295,7 +295,7 @@ def get_matching_users(req):
 @permission_classes([IsAuthenticated])
 def get_channel_name(req, id):
     try: 
-        if id is None: 
+        if id is None or id == 'null' or id == "": 
             return Response({
                 "success": False, 
                 "message": "user id is needed"
