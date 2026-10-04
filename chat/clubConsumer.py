@@ -4,15 +4,19 @@ from channels.exceptions import StopConsumer
 
 class ClubConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
-        clubname = self.scope['url_route']['kwargs']['club']
-        self.clubname = clubname
-        await self.channel_layer.group_add(self.clubname, self.channel_name)
-        await self.send({
-            "type": "websocket.accept", 
-            "message": "connected"
-        })
+        try:
+            clubname = self.scope['url_route']['kwargs']['club']
+            self.clubname = clubname
+            await self.channel_layer.group_add(self.clubname, self.channel_name)
+            await self.send({
+                "type": "websocket.accept", 
+                "message": "connected"
+            })
+        except Exception as err:
+            print(str(err))
 
     async def websocket_receive(self, event):
+        print("working till here 1121")
         await self.channel_layer.group_send(self.clubname, {
             "type": "chat.message", 
             "text": event['text']
