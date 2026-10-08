@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'experience',
     'message',
     'friend_request',
+    'post',
 ]
 
 AUTH_USER_MODEL = 'account.User'
