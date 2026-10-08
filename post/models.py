@@ -10,8 +10,15 @@ class PostModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+    def __str__(self):
+        return self.title
+
+
 
 class PostImageModel(models.Model):
     post = models.ForeignKey(PostModel, on_delete=models.CASCADE, null=False, blank=False, related_name="images")
     image = models.ImageField(upload_to='post/images/')
 
+
+    def __str__(self):
+        return self.post.title
