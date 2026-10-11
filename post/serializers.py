@@ -1,10 +1,65 @@
-from rest_framework.serializers import ModelSerializer
-from models import PostModel, PostImageModel
-from rest_framework.exceptions import ValidationError
-from PIL import Image
+from rest_framework import serializers
+from PIL import Image, UnidentifiedImageError
+from .models import PostModel, PostImageModel, PostFileModel
 
 
-class PostSerializer(ModelSerializer):
+class PostImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostImageModel
+        fields = "__all__"
+        extra_kwargs = {
+            "id": {"read_only": True},
+            "post": {"read_only": True},
+        }
+
+    def validate_image(self, image_file):
+        if image_file.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                "Image size cannot exceed 5 MB."
+            )
+
+        image = Image.open(image_file)
+
+        if image.format not in ("PNG", "JPEG", "WEBP"):
+            raise serializers.ValidationError(
+                "Allowed formats: PNG, JPEG, WEBP."
+            )
+
+        if image.width > 600 or image.height > 450:
+            raise serializers.ValidationError(
+                "Maximum dimensions: 600 × 450 pixels."
+            )
+        return image_file
+
+
+class PostFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostFileModel
+        fields = "__all__"
+        extra_kwargs = {
+            "id": {"read_only": True},
+            "post": {"read_only": True},
+        }
+
+    def validate_file(self, file):
+        if file.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                "File size cannot exceed 5 MB."
+            )
+
+        allowed_extensions = (".pdf", ".doc", ".docx")
+
+        if not file.name.lower().endswith(allowed_extensions):
+            raise serializers.ValidationError(
+                "Only PDF, DOC, and DOCX files are allowed."
+            )
+
+        return file
+
+class PostSerializer(serializers.ModelSerializer):
+    images = PostImageSerializer(many=True, required=False)
+    files = PostFileSerializer(many=True, required=False)
+
     class Meta:
         model = PostModel
         fields = "__all__"
@@ -12,46 +67,55 @@ class PostSerializer(ModelSerializer):
             "id": {"read_only": True},
         }
 
+    def validate(self, attrs):
+        title = attrs.get("title")
 
-    def validate(self, obj):
-        if obj.get("creator") == None:
-            raise ValidationError("creator cannot be none")
-        if len(obj.get("title")) < 3 or len(obj.title) > 150:
-            raise ValidationError("title should have atleast 3 and max 150 characters")
-        return obj
+        if title is not None and not 3 <= len(title) <= 150:
+            raise serializers.ValidationError({
+                "title": "Title must be between 3 and 150 characters."
+            })
 
+        return attrs
 
-class PostImageSerializer(ModelSerializer):
-    class Meta:
-        model = PostImageModel
-        fields = "__all__"
+    def create(self, validated_data):
+        images = validated_data.pop("images", [])
+        files = validated_data.pop("files", [])
 
-    def validate(self, obj):
-        try:
-            image_file = obj.get("image")
-            if image_file is None:
-                raise ValidationError("Image cannot be None")
-            image = Image.open(image_file)
-    
-            MAX_IMAGE_FILE_SIZE = 5*1024*1024
-    
-            if image_file.size > MAX_IMAGE_FILE_SIZE:
-                raise ValidationError("image file size cannot exceed 5mb!")
-    
-            ALLOWED_FORMATS = ("PNG", "JPEG", "WEBP")
-    
-            if image.format not in ALLOWED_FORMATS:
-                raise ValidationError("allowed image format: png, jpeg, webp")
-    
-            MAX_WIDTH = 600
-            MAX_HEIGHT = 450
-    
-            if image.height > MAX_HEIGHT or image.width > MAX_WIDTH:
-                raise ValidationError("image can have max of 450px in height and 600px in width")
+        post = PostModel.objects.create(**validated_data)
 
-        except Exception as err:
-            print(str(err))
-        
-        
+        for image_data in images:
+            PostImageModel.objects.create(
+                post=post,
+                **image_data
+            )
 
-        
+        for file_data in files:
+            PostFileModel.objects.create(
+                post=post,
+                **file_data
+            )
+
+        return post
+
+    def update(self, instance, validated_data):
+        images = validated_data.pop("images", [])
+        files = validated_data.pop("files", [])
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        for image_data in images:
+            PostImageModel.objects.create(
+                post=instance,
+                **image_data
+            )
+
+        for file_data in files:
+            PostFileModel.objects.create(
+                post=instance,
+                **file_data
+            )
+
+        return instance

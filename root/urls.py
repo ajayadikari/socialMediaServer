@@ -29,6 +29,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView
 )
+from post.urls import urlspattern as postUrls
 
 
 
@@ -40,6 +41,7 @@ urlpatterns = [
     path('api/club/', include(clubUrls)),
     path('api/message/', include(messageUrls)),
     path('api/friend-request/', include(frinedRequestUrls)),
+    path('api/post/', include(postUrls)),
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
